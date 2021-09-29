@@ -30,6 +30,7 @@ library(dplyr);
 library(knitr)
 library(pander);
 library(synthpop);
+library(broom);
 #' Here are the libraries R currently sees:
 search() %>% pander();
 #' Load data
@@ -44,8 +45,50 @@ dat0 <- import(inputdata['dat0'])
 ggpairs(dat0);
 #' Set all the two-value columns to be TRUE/FALSE
 dat1 <- mutate(dat0
-               , across(where( function(xx) length(unique(xx))==2), factor));
-#' Now try the scatterplot matrix again
+               , across(where( function(xx) length(unique(xx))==2), factor) 
+               , group =  sample(c('test', 'train'), size = n(), replace=TRUE ));
+head(dat1$group)
+dat1$group %>% table
+dat1train <- subset(dat1, subset = group=='train') #creates a subset for train
+dat1test <- subset(dat1, subset = group=='test')   #creates a subset for test
+
+fit <- lm(CHOL ~ PROT, data = dat1train)
+summary(fit) %>% tidy
+fit%>% tidy
+glance(fit)
+fit.null <- lm(CHOL ~ 1, data = dat1train)
+summary(fit.null)
+anova(fit.null, fit)  # compares two models
+
+fit.all <- lm(CHOL ~ PROT+CHE+GGT+ ALT+AST, data = dat1train)
+colnames(dat1train) %>% paste0(collapse='+')
+update(fit,.~ PROT+CHE+GGT+ ALT+AST)
+anova(fit, fit.all, fit.null)  # compares three models
+
+#step wise elimination regression
+fitAIC<-step(fit, scope = list(lower = fit, upper = fit.all, direction= "both"))
+summary(fitAIC) %>% tidy
+
+
+#all possible two-way interactions
+fit.two.way <- lm(CHOL ~ (PROT+CHE+GGT+ ALT+AST)^2, data = dat1train)
+fit.two.way.step <- step(fit.two.way, scope = list(lower = fit, upper = fit.all, direction= "both"))
+summary(fit.two.way)
+summary(fit.two.way.step) %>% tidy
+
+# model diagnostics
+
+
+
+#return a random number
+sample(1:10)
+project-seed <- 78229
+set.seed (project_seed)
+sample (1:10) # after set.seed, you get the same number each time
+sample(1:10)  # creates a second different new number each time.
+
+
+#' Now try the scatter plot matrix again
 ggpairs(dat1);
 
 
@@ -155,5 +198,6 @@ ggplot (dat0, aes(x=ALB,y=PROT)) + layers[c(1,3)]
 ggplot (dat0, aes(x=ALB,y=PROT)) + layers[-2] + geom_smooth(method="lm", fill="lightblue", color="green")
 
 
-
+#' ## Model fitting / Variable selection
+#' 
 
