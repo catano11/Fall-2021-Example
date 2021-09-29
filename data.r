@@ -77,6 +77,12 @@ summary(fit.two.way)
 summary(fit.two.way.step) %>% tidy
 
 # model diagnostics
+plot(fit.two.way.step)
+plot(fit.two.way)
+
+
+## plot(predict(fit.all3way,dat1test)~dat1test$smoking)
+## plot(dat1test$smoking, predict(fit.all3way,dat1test)-dat1test$smoking)
 
 
 
