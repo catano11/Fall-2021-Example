@@ -206,4 +206,4 @@ ggplot (dat0, aes(x=ALB,y=PROT)) + layers[-2] + geom_smooth(method="lm", fill="l
 
 #' ## Model fitting / Variable selection
 #' 
-
+repl_python()
